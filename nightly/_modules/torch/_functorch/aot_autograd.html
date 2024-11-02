@@ -265,7 +265,7 @@
           <div class="pytorch-left-menu-search">
             
     <div class="version">
-      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.6.0a0+gitb6b9596) &#x25BC</a>
+      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.6.0a0+gitaa54b24) &#x25BC</a>
     </div>
     
 
@@ -909,7 +909,7 @@
     <span class="n">fake_mode</span><span class="p">:</span> <span class="n">FakeTensorMode</span><span class="p">,</span>
     <span class="n">shape_env</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ShapeEnv</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">ViewAndMutationMeta</span><span class="p">]:</span>
-    <span class="k">with</span> <span class="n">dynamo_timed</span><span class="p">(</span><span class="s2">&quot;create_aot_dispatcher_function&quot;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">dynamo_timed</span><span class="p">(</span><span class="s2">&quot;create_aot_dispatcher_function&quot;</span><span class="p">,</span> <span class="n">log_pt2_compile_event</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_create_aot_dispatcher_function</span><span class="p">(</span>
             <span class="n">flat_fn</span><span class="p">,</span> <span class="n">fake_flat_args</span><span class="p">,</span> <span class="n">aot_config</span><span class="p">,</span> <span class="n">fake_mode</span><span class="p">,</span> <span class="n">shape_env</span>
         <span class="p">)</span>
