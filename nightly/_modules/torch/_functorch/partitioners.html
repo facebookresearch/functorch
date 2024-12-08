@@ -265,7 +265,7 @@
           <div class="pytorch-left-menu-search">
             
     <div class="version">
-      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.6.0a0+git0052943) &#x25BC</a>
+      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.6.0a0+gitb1bb860) &#x25BC</a>
     </div>
     
 
@@ -414,6 +414,11 @@
 <span class="kn">from</span> <span class="nn">torch.utils.checkpoint</span> <span class="kn">import</span> <span class="n">CheckpointPolicy</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">._activation_checkpointing.knapsack</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">dp_knapsack</span><span class="p">,</span>
+    <span class="n">greedy_knapsack</span><span class="p">,</span>
+    <span class="n">ilp_knapsack</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">._aot_autograd.logging_utils</span> <span class="kn">import</span> <span class="n">get_aot_graph_name</span>
 <span class="kn">from</span> <span class="nn">._aot_autograd.utils</span> <span class="kn">import</span> <span class="n">is_with_effects</span>
 <span class="kn">from</span> <span class="nn">.compile_utils</span> <span class="kn">import</span> <span class="n">fx_graph_cse</span><span class="p">,</span> <span class="n">get_aten_target</span>
@@ -1768,126 +1773,6 @@
     <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
         <span class="n">name_to_node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
     <span class="k">return</span> <span class="n">name_to_node</span>
-
-
-<span class="k">def</span> <span class="nf">greedy_knapsack</span><span class="p">(</span>
-    <span class="n">memory</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">runtimes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">max_memory</span><span class="p">:</span> <span class="nb">float</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">runtimes</span><span class="p">)</span>
-    <span class="n">items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
-
-    <span class="c1"># Sort items based on the ratio of runtime to memory in descending order</span>
-    <span class="n">items</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="n">runtimes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">memory</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="n">total_memory</span> <span class="o">=</span> <span class="mf">0.0</span>
-    <span class="n">total_runtime</span> <span class="o">=</span> <span class="mf">0.0</span>
-    <span class="n">items_to_save</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">items_to_allow_recomputing</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">total_memory</span> <span class="o">+</span> <span class="n">memory</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">max_memory</span><span class="p">:</span>
-            <span class="n">total_memory</span> <span class="o">+=</span> <span class="n">memory</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="n">total_runtime</span> <span class="o">+=</span> <span class="n">runtimes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="n">items_to_save</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">items_to_allow_recomputing</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">total_runtime</span><span class="p">,</span> <span class="n">items_to_save</span><span class="p">,</span> <span class="n">items_to_allow_recomputing</span>
-
-
-<span class="k">def</span> <span class="nf">ilp_knapsack</span><span class="p">(</span>
-    <span class="n">memory</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">runtimes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">max_memory</span><span class="p">:</span> <span class="nb">float</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
-    <span class="k">try</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">Bounds</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">,</span> <span class="n">milp</span>
-    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-            <span class="s2">&quot;To use the ILP for memory budget checkpointing you need to install scipy&quot;</span>
-        <span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
-
-    <span class="n">np_memory</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">memory</span><span class="p">)</span>
-    <span class="n">np_runtimes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">runtimes</span><span class="p">)</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="n">np_runtimes</span>  <span class="c1"># type: ignore[operator]</span>
-
-    <span class="n">memory_constraint</span> <span class="o">=</span> <span class="n">LinearConstraint</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="n">np_memory</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">max_memory</span><span class="p">))</span>
-    <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">memory_constraint</span><span class="p">]</span>
-
-    <span class="n">integrality</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="n">milp</span><span class="p">(</span>
-        <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span> <span class="n">integrality</span><span class="o">=</span><span class="n">integrality</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">Bounds</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Somehow scipy solving failed&quot;</span><span class="p">)</span>
-
-    <span class="n">items_to_save</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">items_to_allow_recomputing</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">items_to_save</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">items_to_allow_recomputing</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
-    <span class="k">return</span> <span class="o">-</span><span class="n">res</span><span class="o">.</span><span class="n">fun</span><span class="p">,</span> <span class="n">items_to_save</span><span class="p">,</span> <span class="n">items_to_allow_recomputing</span>
-
-
-<span class="k">def</span> <span class="nf">dp_knapsack</span><span class="p">(</span>
-    <span class="n">memory</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">runtimes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">max_memory</span><span class="p">:</span> <span class="nb">float</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-    <span class="c1"># Scaling factor to convert floating point weights to integers</span>
-    <span class="n">S</span> <span class="o">=</span> <span class="mi">10000</span>
-
-    <span class="c1"># Quantize the memory weights</span>
-    <span class="n">quantized_memory</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
-        <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">m</span> <span class="o">*</span> <span class="n">S</span><span class="p">))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">memory</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span>
-    <span class="p">)</span>
-    <span class="n">runtimes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">runtimes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
-
-    <span class="c1"># Quantized pseudopolynomial DP for 0-1 Knapsack</span>
-    <span class="n">quantized_max_memory</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">max_memory</span> <span class="o">*</span> <span class="n">S</span><span class="p">))</span>
-
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">memory</span><span class="p">)</span>
-
-    <span class="c1"># Initialize the DP table</span>
-    <span class="c1"># TODO(chilli): I think if needed, this memory can be optimized with sliding</span>
-    <span class="c1"># window trick + Hirschberg trick:</span>
-    <span class="c1"># https://codeforces.com/blog/entry/47247?#comment-316200</span>
-    <span class="n">dp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-        <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">quantized_max_memory</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span>
-    <span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-        <span class="n">current_memory</span> <span class="o">=</span> <span class="n">quantized_memory</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="n">current_runtime</span> <span class="o">=</span> <span class="n">runtimes</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-
-        <span class="c1"># Copy the previous row</span>
-        <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
-
-        <span class="c1"># Update dp[i, j] for all j &gt;= current_memory</span>
-        <span class="k">if</span> <span class="n">current_memory</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">current_runtime</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">current_memory</span><span class="p">:]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
-                <span class="n">dp</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">current_memory</span><span class="p">:],</span>
-                <span class="n">dp</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="n">current_memory</span><span class="p">]</span> <span class="o">+</span> <span class="n">current_runtime</span><span class="p">,</span>
-            <span class="p">)</span>
-
-    <span class="c1"># Backtrack to find the items included in the knapsack</span>
-    <span class="n">saved_items</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">recomputable_items</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">j</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">quantized_max_memory</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]:</span>
-            <span class="n">saved_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Include this item (indexing from 0)</span>
-            <span class="n">j</span> <span class="o">-=</span> <span class="nb">int</span><span class="p">(</span><span class="n">quantized_memory</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">recomputable_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-
-    <span class="n">saved_items</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>  <span class="c1"># To get items in the order they were added</span>
-
-    <span class="c1"># The maximum runtime that can be achieved within the max_memory constraint</span>
-    <span class="n">max_runtime</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">quantized_max_memory</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
-    <span class="k">return</span> <span class="n">max_runtime</span><span class="p">,</span> <span class="n">saved_items</span><span class="p">,</span> <span class="n">recomputable_items</span>
 
 
 <span class="k">def</span> <span class="nf">_optimize_runtime_with_given_memory</span><span class="p">(</span>
