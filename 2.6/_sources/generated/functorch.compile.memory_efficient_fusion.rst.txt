@@ -1,0 +1,6 @@
+﻿functorch.compile.memory\_efficient\_fusion
+===========================================
+
+.. currentmodule:: functorch.compile
+
+.. autofunction:: memory_efficient_fusion

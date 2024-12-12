@@ -1,0 +1,6 @@
+﻿functorch.compile.aot\_function
+===============================
+
+.. currentmodule:: functorch.compile
+
+.. autofunction:: aot_function

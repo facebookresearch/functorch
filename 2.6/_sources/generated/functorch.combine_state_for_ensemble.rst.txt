@@ -1,0 +1,6 @@
+﻿functorch.combine\_state\_for\_ensemble
+=======================================
+
+.. currentmodule:: functorch
+
+.. autofunction:: combine_state_for_ensemble

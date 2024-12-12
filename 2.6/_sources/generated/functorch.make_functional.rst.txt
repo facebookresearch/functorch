@@ -1,0 +1,6 @@
+﻿functorch.make\_functional
+==========================
+
+.. currentmodule:: functorch
+
+.. autofunction:: make_functional

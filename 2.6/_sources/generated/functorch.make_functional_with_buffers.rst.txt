@@ -1,0 +1,6 @@
+﻿functorch.make\_functional\_with\_buffers
+=========================================
+
+.. currentmodule:: functorch
+
+.. autofunction:: make_functional_with_buffers

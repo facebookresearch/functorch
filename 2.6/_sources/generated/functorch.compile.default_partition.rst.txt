@@ -1,0 +1,6 @@
+﻿functorch.compile.default\_partition
+====================================
+
+.. currentmodule:: functorch.compile
+
+.. autofunction:: default_partition

@@ -1,0 +1,6 @@
+﻿functorch.vjp
+=============
+
+.. currentmodule:: functorch
+
+.. autofunction:: vjp

@@ -1,0 +1,6 @@
+﻿functorch.jvp
+=============
+
+.. currentmodule:: functorch
+
+.. autofunction:: jvp
