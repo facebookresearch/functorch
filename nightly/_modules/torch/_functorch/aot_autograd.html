@@ -265,7 +265,7 @@
           <div class="pytorch-left-menu-search">
             
     <div class="version">
-      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.6.0a0+git553031f) &#x25BC</a>
+      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.6.0a0+git2293fe1) &#x25BC</a>
     </div>
     
 
@@ -393,6 +393,7 @@
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">Callable</span><span class="p">,</span>
     <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">KeysView</span><span class="p">,</span>
     <span class="n">List</span><span class="p">,</span>
     <span class="n">NewType</span><span class="p">,</span>
     <span class="n">Optional</span><span class="p">,</span>
@@ -417,6 +418,7 @@
     <span class="n">dynamo_timed</span><span class="p">,</span>
     <span class="n">get_chromium_event_logger</span><span class="p">,</span>
     <span class="n">preserve_rng_state</span><span class="p">,</span>
+    <span class="n">set_feature_use</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">torch._guards</span> <span class="kn">import</span> <span class="n">detect_fake_mode</span>
 <span class="kn">from</span> <span class="nn">torch._inductor.output_code</span> <span class="kn">import</span> <span class="n">OutputCode</span>
@@ -1390,6 +1392,68 @@
     <span class="k">return</span> <span class="n">AOTModule</span><span class="p">()</span></div>
 
 
+<span class="k">def</span> <span class="nf">_try_get_metadata_from_dynamo</span><span class="p">(</span>
+    <span class="n">mod</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">param_keys</span><span class="p">:</span> <span class="n">KeysView</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">full_args_num</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">_guards</span><span class="o">.</span><span class="n">Source</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Metadata is forwarded from Dynamo to AOTDispatch via special fields on GraphModule.</span>
+<span class="sd">    We first verify that `mod` does come from Dynamo, then we handle cases where</span>
+<span class="sd">    metadata might be missing.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        aot_autograd_arg_pos_to_source: used to dedup params and their guards</span>
+<span class="sd">        static_input_indices: used to identify static inputs for cudagraphs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;dynamo_compile_id&quot;</span> <span class="ow">in</span> <span class="n">mod</span><span class="o">.</span><span class="n">meta</span><span class="p">):</span>
+        <span class="c1"># graph was not captured by dynamo</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="s2">&quot;_param_name_to_source&quot;</span><span class="p">):</span>
+        <span class="c1"># is from export</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]</span>
+
+    <span class="c1"># We now know this came from dynamo, and (1) we care about guards,</span>
+    <span class="c1"># so setting up aot_autograd_arg_pos_to_source for downstream dedup guards</span>
+    <span class="c1"># can now be done safely. (2) Dynamo logic protects the 1:1 sizing below.</span>
+    <span class="c1"># Additionally, we mark static indices for cudagraphs.</span>
+    <span class="n">param_name_to_source</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">_param_name_to_source</span>
+    <span class="n">seen_sources</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="n">aot_autograd_arg_pos_to_source</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># Collect the new inputs lifted by aotdispatch</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">param_keys</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">param_name_to_source</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> not found.&quot;</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">param_name_to_source</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">source</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_sources</span><span class="p">,</span> <span class="n">source</span>
+        <span class="n">seen_sources</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+        <span class="n">aot_autograd_arg_pos_to_source</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+
+    <span class="c1"># Collect the dynamo graph inputs</span>
+    <span class="n">static_input_indices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">find_nodes</span><span class="p">(</span><span class="n">op</span><span class="o">=</span><span class="s2">&quot;placeholder&quot;</span><span class="p">)):</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">&quot;_dynamo_source&quot;</span><span class="p">)</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">_dynamo_source</span>
+        <span class="k">assert</span> <span class="n">source</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_sources</span><span class="p">,</span> <span class="n">source</span>
+        <span class="n">seen_sources</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+        <span class="n">aot_autograd_arg_pos_to_source</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+        <span class="n">source_name</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">name</span><span class="p">()</span> <span class="k">if</span> <span class="n">source</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;tensor_dict&quot;</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">meta</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;tensor_dict&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;_dynamo_static_input_type&quot;</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="p">):</span>
+            <span class="n">static_inputs_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;Adding static input pos </span><span class="si">%s</span><span class="s2"> for source </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">source_name</span>
+            <span class="p">)</span>
+            <span class="n">static_input_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">static_inputs_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;Non-static input pos </span><span class="si">%s</span><span class="s2"> for source </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">source_name</span>
+            <span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">full_args_num</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">aot_autograd_arg_pos_to_source</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">aot_autograd_arg_pos_to_source</span><span class="p">,</span> <span class="n">static_input_indices</span>
+
+
 <span class="k">def</span> <span class="nf">aot_module_simplified</span><span class="p">(</span>
     <span class="n">mod</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
     <span class="n">args</span><span class="p">,</span>
@@ -1427,8 +1491,6 @@
     <span class="k">if</span> <span class="n">inference_compiler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">inference_compiler</span> <span class="o">=</span> <span class="n">fw_compiler</span>
 
-    <span class="n">seen_sources</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-
     <span class="n">full_args</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c1"># First, the params</span>
     <span class="n">full_args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">params_flat</span><span class="p">)</span>
@@ -1440,51 +1502,13 @@
             <span class="n">tracing_context</span><span class="o">.</span><span class="n">params_unwrapped_to_flat_index</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">=</span> <span class="n">unwrap_tensor_subclasses_with_indices_to_original</span><span class="p">(</span><span class="n">params_flat</span><span class="p">)</span>
 
-    <span class="n">aot_autograd_arg_pos_to_source</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="c1"># Then, the params 1:1 mapped sources, if relevant.</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="s2">&quot;_param_name_to_source&quot;</span><span class="p">):</span>
-        <span class="n">aot_autograd_arg_pos_to_source</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># We now know this came from dynamo, and (1) we care about guards,</span>
-        <span class="c1"># so setting up aot_autograd_arg_pos_to_source for downstream dedup guards</span>
-        <span class="c1"># can now be done safely. (2) Dynamo logic protects the 1:1 sizing below.</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">assert</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">mod</span><span class="o">.</span><span class="n">_param_name_to_source</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> not found.&quot;</span>
-            <span class="n">source</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">_param_name_to_source</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-            <span class="k">assert</span> <span class="n">source</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_sources</span><span class="p">,</span> <span class="n">source</span>
-            <span class="n">seen_sources</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
-            <span class="n">aot_autograd_arg_pos_to_source</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
-
     <span class="c1"># Next, the input args</span>
     <span class="n">full_args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
 
-    <span class="n">static_input_indices</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="s2">&quot;graph&quot;</span><span class="p">):</span>
-        <span class="c1"># Non dynamo entrypoints can get to here...</span>
-        <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">find_nodes</span><span class="p">(</span><span class="n">op</span><span class="o">=</span><span class="s2">&quot;placeholder&quot;</span><span class="p">)):</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">&quot;_dynamo_source&quot;</span><span class="p">):</span>
-                <span class="c1"># ... but not here!</span>
-                <span class="k">if</span> <span class="n">aot_autograd_arg_pos_to_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">aot_autograd_arg_pos_to_source</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="n">source</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">_dynamo_source</span>
-                <span class="k">assert</span> <span class="n">source</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_sources</span><span class="p">,</span> <span class="n">source</span>
-                <span class="n">seen_sources</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
-                <span class="n">aot_autograd_arg_pos_to_source</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
-                <span class="n">source_name</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">name</span><span class="p">()</span> <span class="k">if</span> <span class="n">source</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
-
-                <span class="k">if</span> <span class="s2">&quot;tensor_dict&quot;</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">meta</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;tensor_dict&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                    <span class="s2">&quot;_dynamo_static_input_type&quot;</span><span class="p">,</span> <span class="kc">None</span>
-                <span class="p">):</span>
-                    <span class="n">static_inputs_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                        <span class="s2">&quot;Adding static input pos </span><span class="si">%s</span><span class="s2"> for source </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">source_name</span>
-                    <span class="p">)</span>
-                    <span class="n">static_input_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">static_inputs_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                        <span class="s2">&quot;Non-static input pos </span><span class="si">%s</span><span class="s2"> for source </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">source_name</span>
-                    <span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">aot_autograd_arg_pos_to_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_args</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">aot_autograd_arg_pos_to_source</span><span class="p">)</span>
+    <span class="p">(</span>
+        <span class="n">aot_autograd_arg_pos_to_source</span><span class="p">,</span>
+        <span class="n">static_input_indices</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="n">_try_get_metadata_from_dynamo</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_args</span><span class="p">))</span>
 
     <span class="n">dynamic_shapes</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">full_args</span><span class="p">:</span>
@@ -1528,6 +1552,7 @@
         <span class="n">local</span> <span class="o">=</span> <span class="n">should_use_local_autograd_cache</span><span class="p">()</span>
         <span class="n">remote</span> <span class="o">=</span> <span class="n">should_use_remote_autograd_cache</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">local</span> <span class="ow">or</span> <span class="n">remote</span><span class="p">:</span>
+            <span class="n">set_feature_use</span><span class="p">(</span><span class="s2">&quot;aot_autograd_remote_cache&quot;</span><span class="p">,</span> <span class="n">remote</span><span class="p">)</span>
             <span class="n">compiled_fn</span> <span class="o">=</span> <span class="n">AOTAutogradCache</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
                 <span class="n">dispatch_and_compile</span><span class="p">,</span>
                 <span class="n">mod</span><span class="p">,</span>

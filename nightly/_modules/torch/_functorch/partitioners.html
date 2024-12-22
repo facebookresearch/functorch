@@ -265,7 +265,7 @@
           <div class="pytorch-left-menu-search">
             
     <div class="version">
-      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.6.0a0+git553031f) &#x25BC</a>
+      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.6.0a0+git2293fe1) &#x25BC</a>
     </div>
     
 
@@ -414,11 +414,13 @@
 <span class="kn">from</span> <span class="nn">torch.utils.checkpoint</span> <span class="kn">import</span> <span class="n">CheckpointPolicy</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">._activation_checkpointing.graph_info_provider</span> <span class="kn">import</span> <span class="n">GraphInfoProvider</span>
 <span class="kn">from</span> <span class="nn">._activation_checkpointing.knapsack</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">dp_knapsack</span><span class="p">,</span>
     <span class="n">greedy_knapsack</span><span class="p">,</span>
     <span class="n">ilp_knapsack</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">._activation_checkpointing.knapsack_evaluator</span> <span class="kn">import</span> <span class="n">KnapsackEvaluator</span>
 <span class="kn">from</span> <span class="nn">._aot_autograd.logging_utils</span> <span class="kn">import</span> <span class="n">get_aot_graph_name</span>
 <span class="kn">from</span> <span class="nn">._aot_autograd.utils</span> <span class="kn">import</span> <span class="n">is_with_effects</span>
 <span class="kn">from</span> <span class="nn">.compile_utils</span> <span class="kn">import</span> <span class="n">fx_graph_cse</span><span class="p">,</span> <span class="n">get_aten_target</span>
@@ -1789,6 +1791,28 @@
         <span class="k">return</span> <span class="n">ilp_knapsack</span><span class="p">(</span><span class="n">memory</span><span class="p">,</span> <span class="n">runtimes</span><span class="p">,</span> <span class="n">max_memory</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">SOLVER</span> <span class="o">==</span> <span class="s2">&quot;dp&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">dp_knapsack</span><span class="p">(</span><span class="n">memory</span><span class="p">,</span> <span class="n">runtimes</span><span class="p">,</span> <span class="n">max_memory</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">SOLVER</span> <span class="o">==</span> <span class="s2">&quot;dynamic_memory_budget_dp&quot;</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">&quot;dynamic_memory_budget_dp is an experimental solver. &quot;</span>
+            <span class="s2">&quot;It does not guarantee performance improvements. &quot;</span>
+            <span class="s2">&quot;Additionally, it is not guaranteed to be stable.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">graph_info_provider</span> <span class="o">=</span> <span class="n">GraphInfoProvider</span><span class="o">.</span><span class="n">inialize_from_graph</span><span class="p">(</span>
+            <span class="n">joint_graph</span><span class="o">=</span><span class="n">joint_graph</span><span class="p">,</span>
+            <span class="n">all_recomputable_banned_nodes</span><span class="o">=</span><span class="n">all_recomputable_banned_nodes</span><span class="p">,</span>
+            <span class="n">recorded_knapsack_input_memories</span><span class="o">=</span><span class="n">memory</span><span class="p">,</span>
+            <span class="n">recorded_knapsack_input_runtimes</span><span class="o">=</span><span class="n">runtimes</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">dp_knapsack</span><span class="p">(</span>
+            <span class="n">memory</span><span class="p">,</span>
+            <span class="n">runtimes</span><span class="p">,</span>
+            <span class="n">KnapsackEvaluator</span><span class="p">(</span>
+                <span class="n">graph_info_provider</span><span class="o">=</span><span class="n">graph_info_provider</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">get_knee_point_memory_budget</span><span class="p">(</span>
+                <span class="n">knapsack_algo</span><span class="o">=</span><span class="n">dp_knapsack</span><span class="p">,</span>
+                <span class="n">max_mem_budget</span><span class="o">=</span><span class="n">max_memory</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
     <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="n">SOLVER</span><span class="p">):</span>
         <span class="n">saved_node_idx</span><span class="p">,</span> <span class="n">recomp_node_idx</span> <span class="o">=</span> <span class="n">SOLVER</span><span class="p">(</span>
             <span class="n">memory</span><span class="p">,</span> <span class="n">joint_graph</span><span class="p">,</span> <span class="n">max_memory</span><span class="p">,</span> <span class="n">node_info</span><span class="p">,</span> <span class="n">all_recomputable_banned_nodes</span>
