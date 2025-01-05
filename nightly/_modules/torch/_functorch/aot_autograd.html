@@ -265,7 +265,7 @@
           <div class="pytorch-left-menu-search">
             
     <div class="version">
-      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.6.0a0+git52742b0) &#x25BC</a>
+      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.7.0a0+gitf2d6cfa) &#x25BC</a>
     </div>
     
 
@@ -415,8 +415,8 @@
 <span class="kn">from</span> <span class="nn">torch._dispatch.python</span> <span class="kn">import</span> <span class="n">enable_python_dispatcher</span>
 <span class="kn">from</span> <span class="nn">torch._dynamo</span> <span class="kn">import</span> <span class="n">compiled_autograd</span>
 <span class="kn">from</span> <span class="nn">torch._dynamo.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CompileEventLogger</span><span class="p">,</span>
     <span class="n">dynamo_timed</span><span class="p">,</span>
-    <span class="n">get_chromium_event_logger</span><span class="p">,</span>
     <span class="n">preserve_rng_state</span><span class="p">,</span>
     <span class="n">set_feature_use</span><span class="p">,</span>
 <span class="p">)</span>
@@ -1024,7 +1024,7 @@
     <span class="n">python_dispatcher_mode</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">enable_python_dispatcher</span><span class="p">()</span> <span class="k">if</span> <span class="n">shape_env</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">nullcontext</span><span class="p">()</span>
     <span class="p">)</span>
-    <span class="n">chromium_log</span> <span class="o">=</span> <span class="n">get_chromium_event_logger</span><span class="p">()</span>
+
     <span class="c1"># See NOTE: [Deferring tensor pack/unpack hooks until runtime]</span>
     <span class="c1"># If any saved tensor hooks are active, we **don&#39;t** want to trace them.</span>
     <span class="c1"># Instead, we&#39;ll let them run at runtime, around the custom autograd.Function</span>
@@ -1078,7 +1078,7 @@
                 <span class="n">req_subclass_dispatch</span> <span class="o">=</span> <span class="n">requires_subclass_dispatch</span><span class="p">(</span>
                     <span class="n">fake_flat_args</span><span class="p">,</span> <span class="n">fw_metadata</span>
                 <span class="p">)</span>
-                <span class="n">chromium_log</span><span class="o">.</span><span class="n">try_add_event_data</span><span class="p">(</span>
+                <span class="n">CompileEventLogger</span><span class="o">.</span><span class="n">try_add_pt2_compile</span><span class="p">(</span>
                     <span class="s2">&quot;backend_compile&quot;</span><span class="p">,</span> <span class="n">requires_subclass_dispatch</span><span class="o">=</span><span class="n">req_subclass_dispatch</span>
                 <span class="p">)</span>
 
@@ -1198,17 +1198,17 @@
             <span class="k">if</span> <span class="n">aot_config</span><span class="o">.</span><span class="n">is_export</span><span class="p">:</span>
                 <span class="c1"># export uses just the &quot;graph bits&quot;, whereas the other</span>
                 <span class="c1"># two dispatchers include some extra work around handling a runtime epilogue</span>
-                <span class="n">chromium_log</span><span class="o">.</span><span class="n">try_add_event_data</span><span class="p">(</span>
+                <span class="n">CompileEventLogger</span><span class="o">.</span><span class="n">try_add_pt2_compile</span><span class="p">(</span>
                     <span class="s2">&quot;backend_compile&quot;</span><span class="p">,</span> <span class="n">dispatch_mode</span><span class="o">=</span><span class="s2">&quot;export&quot;</span>
                 <span class="p">)</span>
                 <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">aot_dispatch_export</span><span class="p">,</span> <span class="n">needs_autograd</span><span class="o">=</span><span class="n">needs_autograd</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">needs_autograd</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">aot_config</span><span class="o">.</span><span class="n">pre_dispatch</span><span class="p">:</span>
-                <span class="n">chromium_log</span><span class="o">.</span><span class="n">try_add_event_data</span><span class="p">(</span>
+                <span class="n">CompileEventLogger</span><span class="o">.</span><span class="n">try_add_pt2_compile</span><span class="p">(</span>
                     <span class="s2">&quot;backend_compile&quot;</span><span class="p">,</span> <span class="n">dispatch_mode</span><span class="o">=</span><span class="s2">&quot;autograd&quot;</span>
                 <span class="p">)</span>
                 <span class="k">return</span> <span class="n">aot_dispatch_autograd</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">chromium_log</span><span class="o">.</span><span class="n">try_add_event_data</span><span class="p">(</span>
+                <span class="n">CompileEventLogger</span><span class="o">.</span><span class="n">try_add_pt2_compile</span><span class="p">(</span>
                     <span class="s2">&quot;backend_compile&quot;</span><span class="p">,</span> <span class="n">dispatch_mode</span><span class="o">=</span><span class="s2">&quot;inference&quot;</span>
                 <span class="p">)</span>
                 <span class="k">return</span> <span class="n">aot_dispatch_base</span>
