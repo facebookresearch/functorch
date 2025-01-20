@@ -283,7 +283,7 @@
           <div class="pytorch-left-menu-search">
             
     <div class="version">
-      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.7.0a0+gitcede43e) &#x25BC</a>
+      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.7.0a0+git6cb186e) &#x25BC</a>
     </div>
     
 
@@ -413,7 +413,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">replace</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch._inductor.inductor_prims</span>
@@ -459,11 +459,11 @@
 <span class="k">class</span> <span class="nc">OpTypes</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for keeping track of different operator categories&quot;&quot;&quot;</span>
 
-    <span class="n">fusible_ops</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span>
-    <span class="n">compute_intensive_ops</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span>
-    <span class="n">random_ops</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span>
-    <span class="n">view_ops</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span>
-    <span class="n">recomputable_ops</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span>
+    <span class="n">fusible_ops</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span>
+    <span class="n">compute_intensive_ops</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span>
+    <span class="n">random_ops</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span>
+    <span class="n">view_ops</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span>
+    <span class="n">recomputable_ops</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">is_fusible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">get_aten_target</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fusible_ops</span>
@@ -485,14 +485,14 @@
 <span class="k">class</span> <span class="nc">NodeInfo</span><span class="p">:</span>
     <span class="c1"># Be careful about iterating over these explicitly, as their order may not</span>
     <span class="c1"># be deterministic</span>
-    <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]</span>
-    <span class="n">_required_fw_nodes</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]</span>
-    <span class="n">required_bw_nodes</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]</span>
-    <span class="n">unclaimed_nodes</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]</span>
-    <span class="n">fw_order</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]</span>
+    <span class="n">_required_fw_nodes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]</span>
+    <span class="n">required_bw_nodes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]</span>
+    <span class="n">unclaimed_nodes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]</span>
+    <span class="n">fw_order</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
-    <span class="k">def</span> <span class="nf">required_fw_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">required_fw_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span>
             <span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_required_fw_nodes</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fw_order</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
         <span class="p">)</span>
@@ -562,8 +562,8 @@
 
 <span class="k">def</span> <span class="nf">_extract_graph_with_inputs_outputs</span><span class="p">(</span>
     <span class="n">joint_graph</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span>
-    <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span>
-    <span class="n">outputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span>
+    <span class="n">outputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span>
     <span class="n">subgraph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">fx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -676,7 +676,7 @@
 
 <span class="k">def</span> <span class="nf">_extract_fwd_bwd_outputs</span><span class="p">(</span>
     <span class="n">joint_module</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">num_fwd_outputs</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]]:</span>
     <span class="n">outputs</span> <span class="o">=</span> <span class="n">pytree</span><span class="o">.</span><span class="n">arg_tree_leaves</span><span class="p">(</span>
         <span class="o">*</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">args</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">joint_module</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">find_nodes</span><span class="p">(</span><span class="n">op</span><span class="o">=</span><span class="s2">&quot;output&quot;</span><span class="p">))</span>
     <span class="p">)</span>
@@ -685,7 +685,7 @@
     <span class="k">return</span> <span class="n">fwd_outputs</span><span class="p">,</span> <span class="n">bwd_outputs</span>
 
 
-<span class="k">def</span> <span class="nf">_remove_by_name</span><span class="p">(</span><span class="n">saved_values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_remove_by_name</span><span class="p">(</span><span class="n">saved_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">saved_value</span> <span class="ow">in</span> <span class="n">saved_values</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">saved_value</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
             <span class="n">saved_values</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">saved_value</span><span class="p">)</span>
@@ -694,11 +694,11 @@
 
 <span class="k">def</span> <span class="nf">_extract_fwd_bwd_modules</span><span class="p">(</span>
     <span class="n">joint_module</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span>
-    <span class="n">saved_values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span>
-    <span class="n">saved_sym_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span>
+    <span class="n">saved_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span>
+    <span class="n">saved_sym_nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">num_fwd_outputs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">]:</span>
     <span class="n">fwd_outputs</span><span class="p">,</span> <span class="n">bwd_outputs</span> <span class="o">=</span> <span class="n">_extract_fwd_bwd_outputs</span><span class="p">(</span>
         <span class="n">joint_module</span><span class="p">,</span> <span class="n">num_fwd_outputs</span><span class="o">=</span><span class="n">num_fwd_outputs</span>
     <span class="p">)</span>
@@ -730,7 +730,7 @@
     <span class="c1"># we propagate all symbols which are referenced by backwards inputs.</span>
     <span class="c1"># These are not directly used in the graph but are required for downstream</span>
     <span class="c1"># sizevar assignment</span>
-    <span class="n">saved_symbols</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">saved_symbols</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">saved_sym_nodes_binding</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">saved_sym_nodes_derived</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -793,7 +793,7 @@
 
 <div class="viewcode-block" id="default_partition"><a class="viewcode-back" href="../../../generated/functorch.compile.default_partition.html#functorch.compile.default_partition">[docs]</a><span class="k">def</span> <span class="nf">default_partition</span><span class="p">(</span>
     <span class="n">joint_module</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">_joint_inputs</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">num_fwd_outputs</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Partitions the :attr:`joint_module` in a manner that closely resembles the</span>
 <span class="sd">    behavior observed in the original ``.forward()`` and ``.backward()`` of the</span>
@@ -916,7 +916,7 @@
 <span class="k">def</span> <span class="nf">_count_ops</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">Graph</span><span class="p">):</span>
     <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 
-    <span class="n">cnt</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">cnt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;call_function&quot;</span><span class="p">:</span>
             <span class="n">cnt</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="vm">__name__</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -941,7 +941,7 @@
     <span class="k">return</span> <span class="n">ops</span>
 
 
-<span class="k">def</span> <span class="nf">sort_depths</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">depth_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="k">def</span> <span class="nf">sort_depths</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">depth_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
     <span class="n">arg_depths</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">arg</span><span class="p">:</span> <span class="n">depth_map</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">Node</span><span class="p">)</span>
     <span class="p">}</span>
@@ -972,7 +972,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">new_graph</span> <span class="o">=</span> <span class="n">fx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
-    <span class="n">env</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">env</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="c1"># Add new placeholder nodes in the order specified by the inputs</span>
     <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">gm</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">find_nodes</span><span class="p">(</span><span class="n">op</span><span class="o">=</span><span class="s2">&quot;placeholder&quot;</span><span class="p">):</span>
@@ -1027,7 +1027,7 @@
     <span class="n">fw_module</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span>
     <span class="n">bw_module</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span>
     <span class="n">num_sym_nodes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">]:</span>
     <span class="c1"># During user-driven activation checkpointing, we have to ensure that a rng</span>
     <span class="c1"># op in fwd yields the same output as the recomputed rng op in the bwd.  To</span>
     <span class="c1"># do this, we use functionalize wrappers to wrap the random ops and share</span>
@@ -1478,12 +1478,12 @@
     <span class="c1"># backwards pass instead of only relying on whether it&#39;s unfusible in the</span>
     <span class="c1"># forwards.</span>
 
-    <span class="k">def</span> <span class="nf">find_first_unfusible</span><span class="p">(</span><span class="n">start_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span> <span class="n">max_range</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">find_first_unfusible</span><span class="p">(</span><span class="n">start_nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span> <span class="n">max_range</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Finds the first unfusible node in the chain of nodes starting from</span>
 <span class="sd">        `start_nodes` and returns its position.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sorted_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sorted_nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">start_nodes</span><span class="p">:</span>
             <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">sorted_nodes</span><span class="p">,</span> <span class="p">(</span><span class="n">node_info</span><span class="o">.</span><span class="n">get_fw_order</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">n</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
 
@@ -1586,7 +1586,7 @@
         <span class="k">raise</span>
 
     <span class="n">reachable</span><span class="p">,</span> <span class="n">non_reachable</span> <span class="o">=</span> <span class="n">partition</span>
-    <span class="n">cutset</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">cutset</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">nbrs</span> <span class="ow">in</span> <span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">nx_graph</span><span class="p">[</span><span class="n">n</span><span class="p">])</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">reachable</span><span class="p">):</span>
         <span class="n">cutset</span><span class="o">.</span><span class="n">update</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">nbrs</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">non_reachable</span><span class="p">)</span>
 
@@ -1623,7 +1623,7 @@
 
 
 <span class="k">def</span> <span class="nf">get_default_op_list</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">OpTypes</span><span class="p">:</span>
-    <span class="n">default_recomputable_ops</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">default_recomputable_ops</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">aten</span><span class="o">.</span><span class="n">add</span><span class="p">,</span>
         <span class="n">aten</span><span class="o">.</span><span class="n">sub</span><span class="p">,</span>
         <span class="n">aten</span><span class="o">.</span><span class="n">div</span><span class="p">,</span>
@@ -1796,12 +1796,12 @@
 
 <span class="k">def</span> <span class="nf">_optimize_runtime_with_given_memory</span><span class="p">(</span>
     <span class="n">joint_graph</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span>
-    <span class="n">memory</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
-    <span class="n">runtimes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">memory</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">runtimes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
     <span class="n">max_memory</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">node_info</span><span class="p">:</span> <span class="n">NodeInfo</span><span class="p">,</span>
-    <span class="n">all_recomputable_banned_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+    <span class="n">all_recomputable_banned_nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
     <span class="n">SOLVER</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">activation_memory_budget_solver</span>
     <span class="k">if</span> <span class="n">SOLVER</span> <span class="o">==</span> <span class="s2">&quot;greedy&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">greedy_knapsack</span><span class="p">(</span><span class="n">memory</span><span class="p">,</span> <span class="n">runtimes</span><span class="p">,</span> <span class="n">max_memory</span><span class="p">)</span>
@@ -1894,7 +1894,7 @@
     <span class="n">joint_graph</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span>
     <span class="n">node_info</span><span class="p">:</span> <span class="n">NodeInfo</span><span class="p">,</span>
     <span class="n">memory_budget</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]:</span>
     <span class="k">if</span> <span class="n">memory_budget</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">memory_budget</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;The valid ranges for memory budget are 0 &lt;= m &lt;= 1. The provided value is </span><span class="si">{</span><span class="n">memory_budget</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -1927,7 +1927,7 @@
     <span class="k">if</span> <span class="n">memory_budget</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">runtime_optimized_saved_values</span>
 
-    <span class="k">def</span> <span class="nf">estimate_activations_size</span><span class="p">(</span><span class="n">saved_values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">estimate_activations_size</span><span class="p">(</span><span class="n">saved_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">_size_of</span><span class="p">,</span> <span class="n">saved_values</span><span class="p">))</span> <span class="o">/</span> <span class="mf">1e9</span>
 
     <span class="n">min_act_size</span> <span class="o">=</span> <span class="n">estimate_activations_size</span><span class="p">(</span><span class="n">node_info</span><span class="o">.</span><span class="n">inputs</span><span class="p">)</span>
@@ -1939,7 +1939,7 @@
     <span class="k">def</span> <span class="nf">get_normalized_size</span><span class="p">(</span><span class="n">sz</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">sz</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">max_act_size</span> <span class="o">-</span> <span class="n">min_act_size</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">get_mem_ratio</span><span class="p">(</span><span class="n">activations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="nf">get_mem_ratio</span><span class="p">(</span><span class="n">activations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]):</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">estimate_activations_size</span><span class="p">(</span><span class="n">activations</span><span class="p">)</span> <span class="o">-</span> <span class="n">min_act_size</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
             <span class="n">max_act_size</span> <span class="o">-</span> <span class="n">min_act_size</span>
         <span class="p">)</span>
@@ -1971,7 +1971,7 @@
 
     <span class="n">input_storages</span> <span class="o">=</span> <span class="p">{</span><span class="n">get_node_storage</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">node_info</span><span class="o">.</span><span class="n">inputs</span><span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">get_recomputable_banned_nodes</span><span class="p">(</span><span class="n">banned_nodes</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">get_recomputable_banned_nodes</span><span class="p">(</span><span class="n">banned_nodes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">i</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">banned_nodes</span>
@@ -2133,7 +2133,7 @@
     <span class="n">compiler</span><span class="o">=</span><span class="s2">&quot;inductor&quot;</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">num_fwd_outputs</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Partitions the joint graph such that the backward recomputes the forward.</span>
 <span class="sd">    Recomputing helps in trading off memory bandwidth with computation.</span>
@@ -2203,7 +2203,7 @@
         <span class="n">forward_only_graph</span> <span class="o">=</span> <span class="n">_extract_graph_with_inputs_outputs</span><span class="p">(</span>
             <span class="n">joint_module</span><span class="o">.</span><span class="n">graph</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">fwd_outputs</span><span class="p">,</span> <span class="s2">&quot;forward&quot;</span>
         <span class="p">)</span>
-        <span class="n">required_fw_nodes</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">required_fw_nodes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">name_to_node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">forward_only_graph</span><span class="o">.</span><span class="n">nodes</span>
             <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">op</span> <span class="o">!=</span> <span class="s2">&quot;output&quot;</span>
@@ -2290,7 +2290,7 @@
         <span class="p">}</span>
         <span class="n">remat_nodes</span> <span class="o">=</span> <span class="n">fw_module_nodes</span> <span class="o">&amp;</span> <span class="n">bw_module_nodes</span>
 
-        <span class="n">counts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">counts</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">fw_module</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">remat_nodes</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s2">&quot;_overloadpacket&quot;</span><span class="p">):</span>
                 <span class="n">counts</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">_overloadpacket</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -2310,7 +2310,7 @@
     <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">figname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;fx_graph&quot;</span><span class="p">,</span>
     <span class="n">clear_meta</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">prog</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">prog</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">parse_stack_trace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">dot_graph_shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

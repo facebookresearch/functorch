@@ -283,7 +283,7 @@
           <div class="pytorch-left-menu-search">
             
     <div class="version">
-      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.7.0a0+gitcede43e) &#x25BC</a>
+      <a href='https://pytorch.org/functorch/versions.html'>nightly (2.7.0a0+git6cb186e) &#x25BC</a>
     </div>
     
 
@@ -405,22 +405,10 @@
 <span></span><span class="c1"># mypy: ignore-errors</span>
 
 <span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">KeysView</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span><span class="p">,</span> <span class="n">nullcontext</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">wraps</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Any</span><span class="p">,</span>
-    <span class="n">Callable</span><span class="p">,</span>
-    <span class="n">Dict</span><span class="p">,</span>
-    <span class="n">KeysView</span><span class="p">,</span>
-    <span class="n">List</span><span class="p">,</span>
-    <span class="n">NewType</span><span class="p">,</span>
-    <span class="n">Optional</span><span class="p">,</span>
-    <span class="n">Protocol</span><span class="p">,</span>
-    <span class="n">Sequence</span><span class="p">,</span>
-    <span class="n">Tuple</span><span class="p">,</span>
-    <span class="n">Type</span><span class="p">,</span>
-    <span class="n">TypeVar</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">NewType</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">TypeVar</span>
 <span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">patch</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -851,7 +839,7 @@
 
 <span class="n">aot_autograd_decompositions</span> <span class="o">=</span> <span class="p">{}</span>
 
-<span class="n">FakifiedFlatArgs</span> <span class="o">=</span> <span class="n">NewType</span><span class="p">(</span><span class="s2">&quot;FakifiedFlatArgs&quot;</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span>
+<span class="n">FakifiedFlatArgs</span> <span class="o">=</span> <span class="n">NewType</span><span class="p">(</span><span class="s2">&quot;FakifiedFlatArgs&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span>
 
 
 <span class="n">TOutputCode</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;TOutputCode&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">OutputCode</span><span class="p">)</span>
@@ -881,7 +869,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">output_code_ty</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">TOutputCode</span><span class="p">],</span>
+        <span class="n">output_code_ty</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TOutputCode</span><span class="p">],</span>
         <span class="n">compiler_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">InputType</span><span class="p">]],</span> <span class="n">TOutputCode</span><span class="p">],</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_code_ty</span> <span class="o">=</span> <span class="n">output_code_ty</span>
@@ -896,7 +884,7 @@
 
 
 <span class="k">def</span> <span class="nf">process_inputs</span><span class="p">(</span>
-    <span class="n">flat_args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+    <span class="n">flat_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
     <span class="n">aot_config</span><span class="p">:</span> <span class="n">AOTConfig</span><span class="p">,</span>
     <span class="n">fake_mode</span><span class="p">:</span> <span class="n">FakeTensorMode</span><span class="p">,</span>
     <span class="n">shape_env</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ShapeEnv</span><span class="p">],</span>
@@ -964,8 +952,8 @@
 
 
 <span class="k">def</span> <span class="nf">construct_fake_mode</span><span class="p">(</span>
-    <span class="n">flat_args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">aot_config</span><span class="p">:</span> <span class="n">AOTConfig</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">FakeTensorMode</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ShapeEnv</span><span class="p">]]:</span>
+    <span class="n">flat_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">aot_config</span><span class="p">:</span> <span class="n">AOTConfig</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">FakeTensorMode</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ShapeEnv</span><span class="p">]]:</span>
     <span class="n">fake_mode</span> <span class="o">=</span> <span class="n">detect_fake_mode</span><span class="p">(</span><span class="n">flat_args</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">fake_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">shape_env</span> <span class="o">=</span> <span class="n">ShapeEnv</span><span class="p">()</span> <span class="k">if</span> <span class="n">aot_config</span><span class="o">.</span><span class="n">dynamic_shapes</span> <span class="k">else</span> <span class="kc">None</span>
@@ -981,7 +969,7 @@
     <span class="n">aot_config</span><span class="p">:</span> <span class="n">AOTConfig</span><span class="p">,</span>
     <span class="n">fake_mode</span><span class="p">:</span> <span class="n">FakeTensorMode</span><span class="p">,</span>
     <span class="n">shape_env</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ShapeEnv</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">ViewAndMutationMeta</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">ViewAndMutationMeta</span><span class="p">]:</span>
     <span class="k">with</span> <span class="n">dynamo_timed</span><span class="p">(</span><span class="s2">&quot;create_aot_dispatcher_function&quot;</span><span class="p">,</span> <span class="n">log_pt2_compile_event</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_create_aot_dispatcher_function</span><span class="p">(</span>
             <span class="n">flat_fn</span><span class="p">,</span> <span class="n">fake_flat_args</span><span class="p">,</span> <span class="n">aot_config</span><span class="p">,</span> <span class="n">fake_mode</span><span class="p">,</span> <span class="n">shape_env</span>
@@ -994,7 +982,7 @@
     <span class="n">aot_config</span><span class="p">:</span> <span class="n">AOTConfig</span><span class="p">,</span>
     <span class="n">fake_mode</span><span class="p">:</span> <span class="n">FakeTensorMode</span><span class="p">,</span>
     <span class="n">shape_env</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ShapeEnv</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">ViewAndMutationMeta</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">ViewAndMutationMeta</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Traces the forward and backward graphs of the attr:`flat_fn` to generate a</span>
 <span class="sd">    joint graph. The joint graph is an Fx graph with Aten ops. Please refer to</span>
@@ -1247,7 +1235,7 @@
     <span class="n">fw_compiler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
     <span class="n">bw_compiler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">partition_fn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">default_partition</span><span class="p">,</span>
-    <span class="n">decompositions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">decompositions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">num_params_buffers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">keep_inference_input_mutations</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">inference_compiler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1412,7 +1400,7 @@
 
 <span class="k">def</span> <span class="nf">_try_get_metadata_from_dynamo</span><span class="p">(</span>
     <span class="n">mod</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">param_keys</span><span class="p">:</span> <span class="n">KeysView</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">full_args_num</span><span class="p">:</span> <span class="nb">int</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">_guards</span><span class="o">.</span><span class="n">Source</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">_guards</span><span class="o">.</span><span class="n">Source</span><span class="p">]],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Metadata is forwarded from Dynamo to AOTDispatch via special fields on GraphModule.</span>
 <span class="sd">    We first verify that `mod` does come from Dynamo, then we handle cases where</span>
@@ -1478,7 +1466,7 @@
     <span class="n">fw_compiler</span><span class="p">:</span> <span class="n">AOTDispatchCompiler</span><span class="p">,</span>
     <span class="n">bw_compiler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AOTDispatchCompiler</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">partition_fn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">default_partition</span><span class="p">,</span>
-    <span class="n">decompositions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">decompositions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">keep_inference_input_mutations</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">inference_compiler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AOTDispatchCompiler</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cudagraphs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BoxedBool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1590,7 +1578,7 @@
         <span class="c1"># the inputs so that they can be freed before the end of this scope.</span>
         <span class="c1"># For overhead reasons, this is not the default wrapper, see comment:</span>
         <span class="c1"># https://github.com/pytorch/pytorch/pull/122535/files#r1560096481</span>
-        <span class="k">def</span> <span class="nf">boxed_forward</span><span class="p">(</span><span class="n">runtime_args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]):</span>
+        <span class="k">def</span> <span class="nf">boxed_forward</span><span class="p">(</span><span class="n">runtime_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]):</span>
             <span class="n">flat_args</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">flat_args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">params_flat</span><span class="p">)</span>
             <span class="n">flat_args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">runtime_args</span><span class="p">)</span>
@@ -1608,7 +1596,7 @@
     <span class="c1"># historically returned a function that was not the boxed calling</span>
     <span class="c1"># convention.  This should get fixed...</span>
     <span class="c1"># NB: GraphModule/nn.Module rely on the non-boxed calling convention here</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="o">*</span><span class="n">runtime_args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="o">*</span><span class="n">runtime_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">]):</span>
         <span class="n">full_args</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">full_args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">params_flat</span><span class="p">)</span>
         <span class="n">full_args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">runtime_args</span><span class="p">)</span>
@@ -1626,7 +1614,7 @@
     <span class="n">mod</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
     <span class="n">args</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">decompositions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">decompositions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="c1"># If true, we&#39;ll return a joint forward-backward graph,</span>
     <span class="c1"># As well as metadata on the loss + gradients in the backward.</span>
     <span class="n">trace_joint</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
@@ -1637,7 +1625,7 @@
     <span class="c1"># If None, will be infered from inputs and mod.graph.nodes if mod is a graph module, but the inferred result might be wrong.</span>
     <span class="n">dynamic_shapes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">GraphSignature</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">GraphSignature</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function takes in a module, and returns:</span>
 <span class="sd">    (1) an FX graph that can be exported</span>
@@ -1838,7 +1826,7 @@
     <span class="c1"># it will assume that parms/buffers are static.</span>
     <span class="c1"># With the new inferred dynamic shapes API, maybe this doesn&#39;t matter?</span>
     <span class="n">num_params_buffers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="n">decompositions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">decompositions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A simplified version of export. Used by higher order operators.</span>
@@ -1934,7 +1922,7 @@
     <span class="n">args</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">num_params_buffers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="n">decompositions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">decompositions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="c1"># If we&#39;re exporting a joint graph and we don&#39;t want any tangent inputs in the graph</span>
     <span class="c1"># (because we are backpropping through a scalar 1 loss),</span>
     <span class="c1"># we need to explicitly specify not to include tangents in the graph.</span>
@@ -1947,7 +1935,7 @@
     <span class="c1"># If None, `dynamic_shapes` will be infered from inputs, but the inferred result might be wrong.</span>
     <span class="n">dynamic_shapes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">ViewAndMutationMeta</span><span class="p">,</span> <span class="n">pytree</span><span class="o">.</span><span class="n">TreeSpec</span><span class="p">,</span> <span class="n">pytree</span><span class="o">.</span><span class="n">TreeSpec</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">,</span> <span class="n">ViewAndMutationMeta</span><span class="p">,</span> <span class="n">pytree</span><span class="o">.</span><span class="n">TreeSpec</span><span class="p">,</span> <span class="n">pytree</span><span class="o">.</span><span class="n">TreeSpec</span><span class="p">]:</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
 
     <span class="n">flat_fn</span><span class="p">,</span> <span class="n">out_spec</span> <span class="o">=</span> <span class="n">create_tree_flattened_fn</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
